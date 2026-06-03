@@ -39,7 +39,7 @@ class TraceDatabase:
         self._booted: Dict[Tuple[str, str, str], bool] = {}  # per-core boot detection
         for record in trace:
             self.__process_trace(record)
-    
+
     @classmethod
     def from_file(cls, trace_file: str) -> "TraceDatabase":
         from parsing import parse_trace_line
@@ -53,7 +53,7 @@ class TraceDatabase:
                 if record is not None:
                     records.append(record)
         return cls(records)
-    
+
     def __process_trace(self, record: TraceRecord):
         (cluster, socket, core, wid, uuid) = (
             record.cluster,
@@ -102,7 +102,7 @@ class TraceDatabase:
                 records.extend(uuid_db[uuid])
         records.sort(key=lambda r: (r.cycle or 0, r.line_no))
         return records
-    
+
     def get_uuids_by_component(self, cluster: str, socket: str, core: str, wid: int) -> List[int]:
         wid_db = self._db.get(cluster, {}).get(socket, {}).get(core, {}).get(wid, {})
         wid_uuid_map: Dict[int, List[Dict[str, int]]] = wid_db.get("wid_uuid_map", {})
@@ -115,11 +115,11 @@ class TraceDatabase:
     def get_sockets(self, cluster: str) -> List[str]:
         sockets = list(self._db.get(cluster, {}).keys())
         return sorted([socket for socket in sockets if "socket" in socket])
-    
+
     def get_cores(self, cluster: str, socket: str) -> List[str]:
         cores = list(self._db.get(cluster, {}).get(socket, {}).keys())
         return sorted([core for core in cores if "core" in core])  # filter out non-core entries like "core1-issue-lsu0"
-    
+
     def get_wids(self, cluster: str, socket: str, core: str) -> List[int]:
         wids = list(self._db.get(cluster, {}).get(socket, {}).get(core, {}).keys())
         return sorted([wid for wid in wids if wid is not None]) # filter out None entries if any

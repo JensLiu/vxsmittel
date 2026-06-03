@@ -75,7 +75,7 @@ class FlowAnalyser:
                 f"Warning: Unexpected event sequence for {cluster}/{socket}/{core}/wid{wid} uuid={uuid}: "
                 f"{' -> '.join(event for event, count in events)}"
             )
-            return None
+            # return None
 
         # Collect full trace including LSU/memory subsystem events
         trace_records = self.trace_db.get_trace_by_uuid(cluster, socket, core, uuid)

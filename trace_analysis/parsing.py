@@ -143,7 +143,7 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
     for key, pattern in TOP_PATTERNS.items():
         match = pattern.match(line)
         if match:
-            key = key
+            pattern_name = key
             break
     if not match:
         return None
@@ -159,7 +159,7 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
     payload = parse_payload(match.group("payload"))
     cycle_str = match.group("cycle")
     cycle = int(cycle_str) if cycle_str is not None else None
-    
+
     # general payload parsing
     wid = parse_optional_int(payload.get("wid"))
     pc = parse_optional_int(payload.get("PC"))
@@ -169,10 +169,12 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
         op = payload.get("op")
         wb = parse_optional_int(payload.get("wb"))
         rd = parse_optional_int(payload.get("rd"))
-        rs1_data = [parse_optional_int(v) for v in payload.get("rs1_data")]
-        rs2_data = [parse_optional_int(v) for v in payload.get("rs2_data")]
+        rs1_data_str = payload.get("rs1_data")
+        rs2_data_str = payload.get("rs2_data")
+        rs1_data = None if rs1_data_str is None else [parse_optional_int(v) for v in rs1_data_str]
+        rs2_data = None if rs2_data_str is None else [parse_optional_int(v) for v in rs2_data_str]
         use_PC = parse_optional_int(payload.get("use_PC"))
-        use_imm = parse_optional_int(payload.get("use_imm"))    
+        use_imm = parse_optional_int(payload.get("use_imm"))
         sop = parse_optional_int(payload.get("sop"))
         eop = parse_optional_int(payload.get("eop"))
     elif pattern_name == "lsu":
@@ -182,7 +184,7 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
         data = payload.get("data")
         sop = parse_optional_int(payload.get("sop"))
         eop = parse_optional_int(payload.get("eop"))
-    
+
     return TraceRecord(
         line_no=line_no,
         raw_line=line,
@@ -195,7 +197,7 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
         pc=pc,
         tmask=tmask,
         event=event,
-        action=action,            
+        action=action,
         pipeline_payload= {
             "ex": ex,
             "op": op,
@@ -216,5 +218,6 @@ def parse_trace_line(line: str, line_no: int) -> Optional[TraceRecord]:
             "sop": sop,
             "eop": eop,
         } if pattern_name == "lsu" else None,
-        other_payload=payload if pattern_name not in ("pipeline", "lsu") else None
+        # other_payload=payload if pattern_name not in ("pipeline", "lsu") else None
+        other_payload=payload # Keep the default payload
     )
